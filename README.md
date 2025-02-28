@@ -1,12 +1,68 @@
-# React + Vite
+# Joboard - Job Posting Website
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 🚀 About the Project
+Joboard is a modern and user-friendly job posting platform that allows administrators to post job listings and users to browse, apply, and manage job opportunities. The platform features authentication, a dynamic UI, and an intuitive job search experience.
 
-Currently, two official plugins are available:
+## ✨ Features
+- 🔐 **Authentication System** - Login/Signup for users and admin.
+- 🎨 **Sleek & Responsive UI** - Apple-like UI with smooth animations.
+- 📄 **Job Listings** - View and apply for jobs seamlessly.
+- 🛠️ **Admin Panel** - Manage job postings with an intuitive dashboard.
+- ⚡ **Fast & Secure** - Built with React and optimized for performance.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🏗️ Tech Stack
+- **Frontend**: React, Tailwind CSS
+- **State Management**: useState, useEffect, React Hook Form
+- **Routing**: React Router
+- **Icons**: FontAwesome, React Icons
+- **Storage**: Local Storage (for authentication & user data)
 
-## Expanding the ESLint configuration
+## 📂 Folder Structure
+```
+Joboard/
+│── public/        # Static assets
+│── src/
+│   ├── components/  # Reusable UI components (Navbar, Footer, etc.)
+│   ├── pages/       # Application pages (AuthPage, Dashboard, etc.)
+│   ├── styles/      # Global styles
+│   ├── App.js       # Main application component
+│   ├── index.js     # React entry point
+│── package.json     # Project dependencies
+│── README.md        # Documentation
+```
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🚀 Getting Started
+
+### 1️⃣ Clone the Repository
+```sh
+git clone https://github.com/yourusername/joboard.git
+cd joboard
+```
+
+### 2️⃣ Install Dependencies
+```sh
+npm install
+```
+
+### 3️⃣ Start the Development Server
+```sh
+npm start
+```
+This will launch the app at `http://localhost:3000/`.
+
+## 📌 Deployment
+To deploy the project, you can use **Vercel** or **Netlify**:
+```sh
+npm run build
+```
+Then, upload the `build/` folder to your preferred hosting platform.
+
+## 👥 Contributors
+- **Naman** - Developer & Designer
+
+## 📜 License
+This project is licensed under the MIT License.
+
+---
+🌟 *If you like this project, consider giving it a star on GitHub!* ⭐
+
