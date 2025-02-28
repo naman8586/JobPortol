@@ -1,112 +1,162 @@
-import React, { useState, useEffect, useContext } from "react";
-import { JobContext } from "../context/JobContext";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
-const AdminDashboard = () => {
-  const { jobs = [], addJob, updateJob } = useContext(JobContext);
-  const [form, setForm] = useState({
-    title: "",
-    company: "",
-    location: "",
-    role: "",
-    stipend: "",
-    description: "",
-  });
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [applications, setApplications] = useState([]);
+export default function AuthPage() {
+  const [isLogin, setIsLogin] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm();
+
+  const [users, setUsers] = useState(() => {
+    return JSON.parse(localStorage.getItem("users")) || [];
+  });
+
   useEffect(() => {
-    const storedApplications = JSON.parse(localStorage.getItem("applications")) || [];
-    setApplications(storedApplications);
-  }, []);
+    localStorage.setItem("users", JSON.stringify(users));
+  }, [users]);
 
-  const handleSignOut = () => {
-    localStorage.removeItem("currentUser");
-    navigate("/");
-  };
+  const onSubmit = (data) => {
+    setLoading(true);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+    setTimeout(() => {
+      if (isLogin) {
+        const userExists = users.find(
+          (user) => user.email === data.email && user.password === data.password
+        );
+        if (userExists) {
+          localStorage.setItem("currentUser", JSON.stringify(userExists));
+          alert(`Logged in successfully as ${userExists.role}!`);
+          navigate(userExists.role === "admin" ? "/admin-dashboard" : "/user-dashboard");
+        } else {
+          alert("User not found or incorrect credentials!");
+        }
+      } else {
+        if (data.password !== data.confirmPassword) {
+          alert("Passwords do not match!");
+          setLoading(false);
+          return;
+        }
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!form.title || !form.company || !form.role || !form.stipend) {
-      alert("Please fill all required fields!");
-      return;
-    }
+        if (users.some((user) => user.email === data.email)) {
+          alert("User already exists! Please login.");
+          setLoading(false);
+          return;
+        }
 
-    if (editingIndex !== null) {
-      updateJob(editingIndex, form);
-      setEditingIndex(null);
-    } else {
-      addJob(form);
-    }
+        const newUser = { email: data.email, password: data.password, role: data.role };
+        setUsers((prevUsers) => [...prevUsers, newUser]);
+        alert("Signup successful! Now login.");
+        setIsLogin(true);
+      }
 
-    setForm({ title: "", company: "", location: "", role: "", stipend: "", description: "" });
+      setLoading(false);
+    }, 1500);
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white font-sans">
-      {/* Navbar */}
-      <div className="h-20 flex items-center justify-between px-10 md:px-20 w-full bg-gradient-to-r from-gray-800 to-black shadow-lg">
-        <div className="text-3xl font-extrabold text-yellow-400">Admin Panel</div>
-        <button
-          onClick={handleSignOut}
-          className="bg-red-500 text-white hover:bg-red-600 px-6 py-2 rounded-lg font-semibold transition-all shadow-md"
-        >
-          Sign Out
-        </button>
-      </div>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 text-white px-4">
+      <div className="w-full max-w-md p-8 bg-opacity-30 backdrop-blur-3xl rounded-3xl shadow-2xl border border-gray-700 relative overflow-hidden transition transform hover:scale-105 duration-300">
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-700 to-pink-600 opacity-25 blur-md"></div>
 
-      {/* Content Container */}
-      <div className="max-w-6xl mx-auto p-8">
-        <h2 className="text-4xl font-bold text-center mb-6 text-yellow-400">Manage Job Postings</h2>
+        <div className="flex justify-between mb-6 relative z-10">
+          <button
+            className={`px-6 py-3 w-1/2 text-lg font-semibold transition rounded-l-xl shadow-md ${isLogin ? "bg-yellow-400 text-black" : "bg-transparent border border-yellow-500 text-white hover:bg-yellow-500 hover:text-black"}`}
+            onClick={() => setIsLogin(true)}
+          >
+            Login
+          </button>
+          <button
+            className={`px-6 py-3 w-1/2 text-lg font-semibold transition rounded-r-xl shadow-md ${!isLogin ? "bg-yellow-400 text-black" : "bg-transparent border border-yellow-500 text-white hover:bg-yellow-500 hover:text-black"}`}
+            onClick={() => setIsLogin(false)}
+          >
+            Sign Up
+          </button>
+        </div>
 
-        {/* Job Posting Form */}
-        <div className="bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-700">
-          <h3 className="text-2xl font-semibold mb-4 text-yellow-300">
-            {editingIndex !== null ? "Edit Job" : "Post a Job"}
-          </h3>
-          <form onSubmit={handleSubmit} className="grid gap-5">
-            <input type="text" name="title" value={form.title} onChange={handleChange} placeholder="Job Title" className="border p-3 rounded-lg w-full bg-gray-700 text-white focus:ring-2 focus:ring-yellow-400" required />
-            <input type="text" name="company" value={form.company} onChange={handleChange} placeholder="Company Name" className="border p-3 rounded-lg w-full bg-gray-700 text-white focus:ring-2 focus:ring-yellow-400" required />
-            <input type="text" name="location" value={form.location} onChange={handleChange} placeholder="Location (Optional)" className="border p-3 rounded-lg w-full bg-gray-700 text-white focus:ring-2 focus:ring-yellow-400" />
-            <input type="text" name="role" value={form.role} onChange={handleChange} placeholder="Role" className="border p-3 rounded-lg w-full bg-gray-700 text-white focus:ring-2 focus:ring-yellow-400" required />
-            <input type="text" name="stipend" value={form.stipend} onChange={handleChange} placeholder="Stipend / Salary" className="border p-3 rounded-lg w-full bg-gray-700 text-white focus:ring-2 focus:ring-yellow-400" required />
-            <textarea name="description" value={form.description} onChange={handleChange} placeholder="Job Description" className="border p-3 rounded-lg w-full bg-gray-700 text-white h-28 focus:ring-2 focus:ring-yellow-400"></textarea>
-            <button type="submit" className="bg-yellow-500 hover:bg-yellow-600 text-black px-6 py-3 rounded-lg font-semibold transition-all shadow-md">
-              {editingIndex !== null ? "Update Job" : "Post Job"}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 relative z-10">
+          <div>
+            <label className="block text-gray-300">Email</label>
+            <input
+              type="email"
+              {...register("email", { required: "Email is required" })}
+              className="w-full p-4 rounded-xl bg-gray-800 text-white focus:ring-2 focus:ring-yellow-400 outline-none transition shadow-md"
+            />
+            {errors.email && <p className="text-red-400 text-sm mt-1">{errors.email.message}</p>}
+          </div>
+
+          <div className="relative">
+            <label className="block text-gray-300">Password</label>
+            <input
+              type={showPassword ? "text" : "password"}
+              {...register("password", {
+                required: "Password is required",
+                minLength: { value: 8, message: "At least 8 characters" },
+              })}
+              className="w-full p-4 rounded-xl bg-gray-800 text-white focus:ring-2 focus:ring-yellow-400 outline-none transition shadow-md"
+            />
+            <button
+              type="button"
+              className="absolute right-4 top-12 text-gray-400"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
-          </form>
-        </div>
+            {errors.password && <p className="text-red-400 text-sm mt-1">{errors.password.message}</p>}
+          </div>
 
-        {/* Job Applications */}
-        <div className="mt-10">
-          <h3 className="text-3xl font-semibold mb-4 text-yellow-400">Job Applications</h3>
-          {applications.length === 0 ? (
-            <p className="text-gray-400 text-center">No applications received yet.</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {applications.map((app, index) => (
-                <div key={index} className="bg-gray-800 p-6 rounded-lg shadow-md border border-gray-700 hover:shadow-lg transition-all relative">
-                  <p className="text-lg font-semibold text-yellow-400">Job ID: {app.jobId}</p>
-                  <p className="text-gray-300"><strong>Applicant:</strong> {app.userEmail}</p>
-                  <p className="text-gray-400"><strong>Applied On:</strong> {app.appliedAt}</p>
-                  {app.resume && (
-                    <a href={app.resume} download className="text-blue-400 hover:underline block mt-2">
-                      📄 Download Resume
-                    </a>
-                  )}
-                </div>
-              ))}
-            </div>
+          {!isLogin && (
+            <>
+              <div className="relative">
+                <label className="block text-gray-300">Confirm Password</label>
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  {...register("confirmPassword", {
+                    required: "Confirm Password is required",
+                  })}
+                  className="w-full p-4 rounded-xl bg-gray-800 text-white focus:ring-2 focus:ring-yellow-400 outline-none transition shadow-md"
+                />
+                <button
+                  type="button"
+                  className="absolute right-4 top-12 text-gray-400"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+                {errors.confirmPassword && <p className="text-red-400 text-sm mt-1">{errors.confirmPassword.message}</p>}
+              </div>
+
+              <div>
+                <label className="block text-gray-300">Role</label>
+                <select
+                  {...register("role", { required: "Role is required" })}
+                  className="w-full p-4 rounded-xl bg-gray-800 text-white focus:ring-2 focus:ring-yellow-400 outline-none transition shadow-md"
+                >
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
+                {errors.role && <p className="text-red-400 text-sm mt-1">{errors.role.message}</p>}
+              </div>
+            </>
           )}
-        </div>
+
+          <button
+            type="submit"
+            className="w-full p-4 rounded-xl bg-yellow-400 text-black hover:bg-yellow-500 transition text-lg font-semibold shadow-md hover:shadow-lg"
+          >
+            {loading ? "Processing..." : isLogin ? "Login" : "Sign Up"}
+          </button>
+        </form>
       </div>
     </div>
   );
-};
-
-export default AdminDashboard;
+}
