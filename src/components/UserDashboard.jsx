@@ -1,4 +1,4 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useRef } from "react";
 import Navbar from "./Navbar";
 import Header from "./Header";
 import SearchBar from "./SearchBar";
@@ -8,6 +8,8 @@ function UserDashboard() {
   const { jobs: contextJobs } = useContext(JobContext);
   const [jobs, setJobs] = useState([]);
   const [customSearch, setCustomSearch] = useState(false);
+  const [selectedJob, setSelectedJob] = useState(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     setJobs(contextJobs);
@@ -29,24 +31,40 @@ function UserDashboard() {
     setJobs(filteredJobs);
   };
 
-  const handleApply = (jobId) => {
+  const handleApply = (job) => {
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
     if (!currentUser) {
       alert("Please log in to apply!");
       return;
     }
+    setSelectedJob(job);
+  };
 
-    const newApplication = {
-      jobId,
-      userEmail: currentUser.email,
-      appliedAt: new Date().toLocaleString(),
+  const handleResumeUpload = (event) => {
+    const file = event.target.files[0];
+    if (!file) {
+      alert("No file selected. Application canceled.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+      const newApplication = {
+        jobId: selectedJob.id,
+        userEmail: currentUser.email,
+        resume: reader.result,
+        appliedAt: new Date().toLocaleString(),
+      };
+
+      const applications = JSON.parse(localStorage.getItem("applications")) || [];
+      applications.push(newApplication);
+      localStorage.setItem("applications", JSON.stringify(applications));
+
+      alert(`Applied successfully for ${selectedJob.title}! Resume sent.`);
+      setSelectedJob(null);
     };
-
-    const applications = JSON.parse(localStorage.getItem("applications")) || [];
-    applications.push(newApplication);
-    localStorage.setItem("applications", JSON.stringify(applications));
-
-    alert(`Applied successfully for Job ID: ${jobId}!`);
   };
 
   return (
@@ -79,7 +97,7 @@ function UserDashboard() {
               <p className="text-green-400 font-semibold">Stipend: {job.stipend}</p>
               <p className="text-gray-300 mt-2 text-sm leading-relaxed">{job.description}</p>
               <button
-                onClick={() => handleApply(job.id)}
+                onClick={() => handleApply(job)}
                 className="mt-4 w-full bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-2 rounded-md font-semibold transition-all shadow-md hover:shadow-lg"
               >
                 Apply Now
@@ -90,6 +108,27 @@ function UserDashboard() {
           <p className="text-center text-gray-400 col-span-full text-lg">No jobs found.</p>
         )}
       </div>
+
+      {selectedJob && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-gray-800 p-6 rounded-xl shadow-lg max-w-md w-full">
+            <h3 className="text-yellow-400 text-xl font-semibold">Upload Resume for {selectedJob.title}</h3>
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx"
+              ref={fileInputRef}
+              onChange={handleResumeUpload}
+              className="mt-4 text-white"
+            />
+            <button
+              onClick={() => setSelectedJob(null)}
+              className="mt-4 w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md font-semibold transition-all shadow-md hover:shadow-lg"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
