@@ -43,11 +43,13 @@ export default function AuthPage() {
       } else {
         if (data.password !== data.confirmPassword) {
           alert("Passwords do not match!");
+          setLoading(false);
           return;
         }
 
         if (users.some((user) => user.email === data.email)) {
           alert("User already exists! Please login.");
+          setLoading(false);
           return;
         }
 
@@ -113,17 +115,38 @@ export default function AuthPage() {
           </div>
 
           {!isLogin && (
-            <div>
-              <label className="block text-gray-300">Role</label>
-              <select
-                {...register("role", { required: "Role is required" })}
-                className="w-full p-4 rounded-xl bg-gray-800 text-white focus:ring-2 focus:ring-yellow-400 outline-none transition shadow-md"
-              >
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-              </select>
-              {errors.role && <p className="text-red-400 text-sm mt-1">{errors.role.message}</p>}
-            </div>
+            <>
+              <div className="relative">
+                <label className="block text-gray-300">Confirm Password</label>
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  {...register("confirmPassword", {
+                    required: "Confirm Password is required",
+                  })}
+                  className="w-full p-4 rounded-xl bg-gray-800 text-white focus:ring-2 focus:ring-yellow-400 outline-none transition shadow-md"
+                />
+                <button
+                  type="button"
+                  className="absolute right-4 top-12 text-gray-400"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+                {errors.confirmPassword && <p className="text-red-400 text-sm mt-1">{errors.confirmPassword.message}</p>}
+              </div>
+
+              <div>
+                <label className="block text-gray-300">Role</label>
+                <select
+                  {...register("role", { required: "Role is required" })}
+                  className="w-full p-4 rounded-xl bg-gray-800 text-white focus:ring-2 focus:ring-yellow-400 outline-none transition shadow-md"
+                >
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
+                {errors.role && <p className="text-red-400 text-sm mt-1">{errors.role.message}</p>}
+              </div>
+            </>
           )}
 
           <button
@@ -132,13 +155,6 @@ export default function AuthPage() {
           >
             {loading ? "Processing..." : isLogin ? "Login" : "Sign Up"}
           </button>
-
-          <div className="flex items-center justify-between text-sm text-gray-400 mt-4">
-            <label className="flex items-center">
-              <input type="checkbox" className="mr-2" /> Remember Me
-            </label>
-            <a href="#" className="hover:underline text-yellow-400">Forgot Password?</a>
-          </div>
         </form>
       </div>
     </div>
